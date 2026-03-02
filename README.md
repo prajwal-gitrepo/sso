@@ -1,6 +1,7 @@
 # sso
 
 This is a demo application created to test SSO and get raw tokens to check all claims in jwt.io
+cd into SSOMinimalApiDemo Project before running
 
 ## Pre-requirements
 
