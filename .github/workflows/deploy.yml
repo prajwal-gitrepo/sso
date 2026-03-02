@@ -1,0 +1,55 @@
+# GitHub Actions workflow for deploying ASP.NET Core Minimal API to GitHub Pages
+# This workflow builds the project and deploys static content from wwwroot to GitHub Pages
+
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore dependencies
+        run: dotnet restore SSOMinimalApiDemo/SSOMinimalApiDemo.csproj
+
+      - name: Build project
+        run: dotnet build SSOMinimalApiDemo/SSOMinimalApiDemo.csproj --configuration Release --no-restore
+
+      - name: Publish static files
+        run: dotnet publish SSOMinimalApiDemo/SSOMinimalApiDemo.csproj --configuration Release --output publish_output --no-build
+
+      - name: Copy wwwroot to artifact
+        run: |
+          mkdir -p ./artifact
+          cp -r ./publish_output/wwwroot/* ./artifact/
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./artifact
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
